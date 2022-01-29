@@ -12,9 +12,9 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
-    permission_classes = [
+    permission_classes = (
         *api_settings.DEFAULT_PERMISSION_CLASSES,
-        IsAuthorOrReadOnlly]
+        IsAuthorOrReadOnlly,)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -39,9 +39,9 @@ class PostViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentsSerializer
-    permission_classes = [
+    permission_classes = (
         *api_settings.DEFAULT_PERMISSION_CLASSES,
-        IsAuthorOrReadOnlly]
+        IsAuthorOrReadOnlly,)
 
 
 class GroupView(generics.ListAPIView):
