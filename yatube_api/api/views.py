@@ -1,9 +1,11 @@
 from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from posts.models import Post, Group, Comment
+from rest_framework.settings import api_settings
+from .permissions import IsAuthorOrReadOnlly
+
 from .serializers import PostSerializer, GroupSerializer, CommentsSerializer
 
 
@@ -11,20 +13,12 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
+    permission_classes = [
+        *api_settings.DEFAULT_PERMISSION_CLASSES,
+        IsAuthorOrReadOnlly]
+
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-
-    def perform_update(self, serializer):
-        if serializer.instance.author != self.request.user:
-            raise PermissionDenied('Изменение чужого контента запрещено!')
-        super(PostViewSet, self).perform_update(serializer)
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if instance.author != self.request.user:
-            raise PermissionDenied('Удоление чужого контента запрещено!')
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['get', 'post'])
     def comments(self, request, **kwargs):
@@ -46,18 +40,9 @@ class PostViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentsSerializer
-
-    def perform_update(self, serializer):
-        if serializer.instance.author != self.request.user:
-            raise PermissionDenied('Изменение чужого контента запрещено!')
-        super(CommentViewSet, self).perform_update(serializer)
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if instance.author != self.request.user:
-            raise PermissionDenied('Удоление чужого контента запрещено!')
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    permission_classes = [
+        *api_settings.DEFAULT_PERMISSION_CLASSES,
+        IsAuthorOrReadOnlly]
 
 
 class GroupView(generics.ListAPIView):
