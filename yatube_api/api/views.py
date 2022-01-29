@@ -1,11 +1,10 @@
 from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
-from posts.models import Post, Group, Comment
 from rest_framework.settings import api_settings
-from .permissions import IsAuthorOrReadOnlly
 
+from .permissions import IsAuthorOrReadOnlly
+from posts.models import Post, Group, Comment
 from .serializers import PostSerializer, GroupSerializer, CommentsSerializer
 
 
