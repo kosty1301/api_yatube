@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status, generics, decorators
+from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
