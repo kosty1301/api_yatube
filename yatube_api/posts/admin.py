@@ -1,15 +1,34 @@
 from django.contrib import admin
+from django.conf import settings as conf_settings
 
-from .models import Comment, Group, Post
+from .models import Group, Post, Comment
 
 
+EMPTY_VALUE_DISPLAY = conf_settings.EMPTY_VALUE_DISPLAY
+
+
+@admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'text', 'pub_date', 'author')
+    """Посты."""
+    list_display = ('pk', 'text', 'pub_date', 'author', 'group',)
+    list_editable = ('group',)
     search_fields = ('text',)
     list_filter = ('pub_date',)
     empty_value_display = '-пусто-'
 
 
-admin.site.register(Post, PostAdmin)
-admin.site.register(Group)
-admin.site.register(Comment)
+@admin.register(Group)
+class GroupAdmin(admin.ModelAdmin):
+    """Группы"""
+    list_display = ('title', 'slug', 'description',)
+    search_fields = ('title',)
+    list_filter = ('slug',)
+    empty_value_display = EMPTY_VALUE_DISPLAY
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    """Комментарии"""
+    list_display = ('post', 'author', 'text',)
+    search_fields = ('author',)
+    list_filter = ('post',)
