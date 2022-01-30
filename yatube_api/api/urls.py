@@ -8,7 +8,7 @@ router_v1 = SimpleRouter()
 router_v1.register('posts', PostViewSet, basename='posts')
 router_v1.register(r'posts/(?P<post_id>[^/.]+)/comments',
                    CommentViewSet,
-                   basename='comment_detail'
+                   basename='comment'
                    )
 
 urlpatterns = [

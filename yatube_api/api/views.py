@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status, generics
+from rest_framework import viewsets, status, generics, decorators
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
@@ -19,7 +19,8 @@ class PostViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(detail=True, methods=['get', 'post'])
+    @action(detail=True, methods=['get', 'post'], permission_classes=(
+        *api_settings.DEFAULT_PERMISSION_CLASSES,))
     def comments(self, request, **kwargs):
         post = self.get_object()
         if request.method == 'POST':
@@ -30,7 +31,6 @@ class PostViewSet(viewsets.ModelViewSet):
                                 status=status.HTTP_201_CREATED)
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
-
         comments = Comment.objects.filter(post=post)
         serializer = CommentsSerializer(comments, many=True)
         return Response(serializer.data)
