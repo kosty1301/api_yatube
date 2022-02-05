@@ -1,9 +1,7 @@
-from rest_framework import viewsets, status, generics
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.settings import api_settings
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, generics
 
-from .permissions import IsAuthorOrReadOnlly
+from .permissions import CustomPermission
 from posts.models import Post, Group, Comment
 from .serializers import PostSerializer, GroupSerializer, CommentsSerializer
 
@@ -11,37 +9,24 @@ from .serializers import PostSerializer, GroupSerializer, CommentsSerializer
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-
-    permission_classes = (
-        *api_settings.DEFAULT_PERMISSION_CLASSES,
-        IsAuthorOrReadOnlly,)
+    permission_classes = (CustomPermission,)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-
-    @action(detail=True, methods=['get', 'post'], permission_classes=(
-        *api_settings.DEFAULT_PERMISSION_CLASSES,))
-    def comments(self, request, **kwargs):
-        post = self.get_object()
-        if request.method == 'POST':
-            serializer = CommentsSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(author=request.user, post=post)
-                return Response(serializer.data,
-                                status=status.HTTP_201_CREATED)
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
-        comments = Comment.objects.filter(post=post)
-        serializer = CommentsSerializer(comments, many=True)
-        return Response(serializer.data)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentsSerializer
-    permission_classes = (
-        *api_settings.DEFAULT_PERMISSION_CLASSES,
-        IsAuthorOrReadOnlly,)
+    permission_classes = (CustomPermission,)
+
+    def perform_create(self, serializer):
+        post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
+        serializer.save(author=self.request.user, post=post)
+
+    def get_queryset(self):
+        post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
+        return post.comments
 
 
 class GroupView(generics.ListAPIView):
